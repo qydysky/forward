@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 		{
 			Listen: "tcp://127.0.0.1:20000",
 			To:     "tcp://127.0.0.1:20001",
-			Accept: []string{"127.0.0.1/32"},
+			Accept: []string{"127.0.0.2/32", "127.0.0.1/32"},
 		},
 		{
 			Listen: "tcp://127.0.0.1:20002",
