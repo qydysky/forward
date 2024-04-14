@@ -1,12 +1,10 @@
 module github.com/qydysky/forward
 
-go 1.22
-
-toolchain go1.22.1
+go 1.22.2
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/qydysky/part v0.28.20240411191949
+	github.com/qydysky/part v0.28.20240414033603
 )
 
 require (
@@ -28,5 +26,3 @@ require (
 	golang.org/x/tools v0.19.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/qydysky/part => ../part
