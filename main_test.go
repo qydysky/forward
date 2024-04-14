@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/qydysky/part"
 	pctx "github.com/qydysky/part/ctx"
+	preqf "github.com/qydysky/part/reqf"
+	pweb "github.com/qydysky/part/web"
 )
 
 func Test(t *testing.T) {
@@ -46,6 +50,11 @@ func Test(t *testing.T) {
 			To:     "udp://127.0.0.1:20009",
 			Accept: []string{"127.0.0.1/32"},
 		},
+		{
+			Listen: "tcp://127.0.0.1:20011",
+			To:     "tcp://127.0.0.1:20010",
+			Accept: []string{"127.0.0.1/32"},
+		},
 	})
 
 	go func() {
@@ -75,8 +84,10 @@ func Test(t *testing.T) {
 	}()
 
 	time.Sleep(time.Second)
-	if e := tcpSer("127.0.0.1:20000", "127.0.0.1:20001"); e != nil {
-		t.Fatal(e)
+	for i := 0; i < 100; i++ {
+		if e := tcpSer("127.0.0.1:20000", "127.0.0.1:20001"); e != nil {
+			t.Fatal(e)
+		}
 	}
 	if e := tcpSer("127.0.0.1:20002", "127.0.0.1:20003"); e == nil {
 		t.Fatal(e)
@@ -91,6 +102,12 @@ func Test(t *testing.T) {
 		t.Fatal(e)
 	}
 	if e := tcp2udpSer("127.0.0.1:20008", "127.0.0.1:20009"); e != nil {
+		t.Fatal(e)
+	}
+	if e := tcp2udpSer("127.0.0.1:20008", "127.0.0.1:20009"); e != nil {
+		t.Fatal(e)
+	}
+	if e := webSer("127.0.0.1:20008", "127.0.0.1:20009"); e != nil {
 		t.Fatal(e)
 	}
 }
@@ -149,7 +166,7 @@ func tcpSer(lis, to string) error {
 	if err != nil {
 		return err
 	}
-
+	conn.SetDeadline(time.Now().Add(time.Second))
 	// Send a message to the server
 	_, err = conn.Write([]byte("Hello TCP Server\n"))
 	if err != nil {
@@ -391,4 +408,25 @@ func tcp2udpSer(lis, to string) error {
 	default:
 		return nil
 	}
+}
+
+func webSer(lis, to string) error {
+	{
+		w := pweb.New(&http.Server{
+			Addr: "127.0.0.1:20010",
+		})
+		defer w.Shutdown()
+
+		w.Handle(map[string]func(http.ResponseWriter, *http.Request){
+			`/`: func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte("999"))
+			},
+		})
+	}
+	r := preqf.New()
+	e := r.Reqf(preqf.Rval{
+		Url: "http://127.0.0.1:20010",
+	})
+	fmt.Println(r.Respon)
+	return e
 }
