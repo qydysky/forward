@@ -72,12 +72,11 @@ jobs:
     - name: zip
       run: zip -q -r ubuntu_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Release Asset
-      uses: softprops/action-gh-release@v2
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
       with:
-        draft: true
-        files: |
-          ./ubuntu_go${{ matrix.go }}.zip
+        name: ubuntu_go${{ matrix.go }}.zip
+        path: ./ubuntu_go${{ matrix.go }}.zip
 
   w-build:
     name: build_windows_go${{ matrix.go }}
@@ -109,12 +108,11 @@ jobs:
     - name: zip
       run: .\7za.exe a -r .\windows_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Release Asset
-      uses: softprops/action-gh-release@v2
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
       with:
-        draft: true
-        files: |
-          ./windows_go${{ matrix.go }}.zip
+        name: windows_go${{ matrix.go }}.zip
+        path: ./windows_go${{ matrix.go }}.zip
 
   m-build:
     name: build_macos_go${{ matrix.go }}
@@ -146,9 +144,8 @@ jobs:
     - name: zip
       run: zip -q -r macos_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Release Asset
-      uses: softprops/action-gh-release@v2
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
       with:
-        draft: true
-        files: |
-          ./macos_go${{ matrix.go }}.zip
+        name: macos_go${{ matrix.go }}.zip
+        path: ./macos_go${{ matrix.go }}.zip
