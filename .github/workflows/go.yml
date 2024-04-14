@@ -70,7 +70,7 @@ jobs:
         CGO_ENABLED=0 go build -pgo=auto -v -buildmode=exe .
       
     - name: zip
-      run: zip -q -r ubuntu_go${{ matrix.go }}.zip demo
+      run: zip -q -r ubuntu_go${{ matrix.go }}.zip ./
 
     - name: Upload a Release Asset
       uses: softprops/action-gh-release@v2
@@ -107,7 +107,7 @@ jobs:
         go build -pgo=auto -v -buildmode=exe .
         
     - name: zip
-      run: .\7za.exe a -r .\windows_go${{ matrix.go }}.zip ./demo
+      run: .\7za.exe a -r .\windows_go${{ matrix.go }}.zip ./
 
     - name: Upload a Release Asset
       uses: softprops/action-gh-release@v2
@@ -144,7 +144,7 @@ jobs:
         go build -pgo=auto -v -buildmode=exe .
         
     - name: zip
-      run: zip -q -r macos_go${{ matrix.go }}.zip demo
+      run: zip -q -r macos_go${{ matrix.go }}.zip ./
 
     - name: Upload a Release Asset
       uses: softprops/action-gh-release@v2
