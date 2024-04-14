@@ -70,7 +70,9 @@ func Test(t *testing.T) {
 		}
 	}()
 	defer wait()
-	defer pctx.CallCancel(ctx)
+	defer func() {
+		_ = pctx.CallCancel(ctx)
+	}()
 
 	time.Sleep(time.Second)
 	if e := tcpSer("127.0.0.1:20000", "127.0.0.1:20001"); e != nil {
@@ -131,7 +133,7 @@ func tcpSer(lis, to string) error {
 			// Print the data read from the connection to the terminal
 
 			// Write back the same message to the client
-			conn.Write([]byte("Hello TCP Client\n"))
+			_, _ = conn.Write([]byte("Hello TCP Client\n"))
 		}()
 	}
 
@@ -218,10 +220,10 @@ func udpSer(lis, to string) error {
 		return err
 	}
 
-	conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
+	_, _ = conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
 
 	var buf [512]byte
-	conn1.SetDeadline(time.Now().Add(time.Second))
+	_ = conn1.SetDeadline(time.Now().Add(time.Second))
 	n, _, err := conn1.ReadFromUDP(buf[0:])
 	if err != nil {
 		return err
@@ -231,8 +233,8 @@ func udpSer(lis, to string) error {
 		return errors.New("no match:" + string(buf[:n]))
 	}
 
-	conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
-	conn1.SetDeadline(time.Now().Add(time.Second))
+	_, _ = conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
+	_ = conn1.SetDeadline(time.Now().Add(time.Second))
 	n, _, err = conn1.ReadFromUDP(buf[0:])
 	if err != nil {
 		return err
@@ -286,7 +288,7 @@ func udp2tcpSer(lis, to string) error {
 			// Print the data read from the connection to the terminal
 
 			// Write back the same message to the client
-			conn.Write([]byte("Hello TCP Client\n"))
+			_, _ = conn.Write([]byte("Hello TCP Client\n"))
 		}()
 	}
 
@@ -302,10 +304,10 @@ func udp2tcpSer(lis, to string) error {
 		return err
 	}
 
-	conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
+	_, _ = conn1.WriteToUDP([]byte("Hello UDP Server\n"), udpAddr)
 
 	var buf [512]byte
-	conn1.SetDeadline(time.Now().Add(time.Second))
+	_ = conn1.SetDeadline(time.Now().Add(time.Second))
 	n, _, err := conn1.ReadFromUDP(buf[0:])
 	if err != nil {
 		return err
@@ -351,7 +353,7 @@ func tcp2udpSer(lis, to string) error {
 			// Print the data read from the connection to the terminal
 
 			// Write back the same message to the client
-			conn.Write([]byte("Hello UDP Client\n"))
+			_, _ = conn.Write([]byte("Hello UDP Client\n"))
 		}()
 	}
 

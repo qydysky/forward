@@ -48,7 +48,9 @@ func main() {
 		msdChan, wait := dealConfig(ctx, config)
 
 		defer wait()
-		defer pctx.CallCancel(ctx)
+		defer func() {
+			_ = pctx.CallCancel(ctx)
+		}()
 
 		for {
 			select {
@@ -94,7 +96,9 @@ func dealConfig(ctx context.Context, config Config) (msgChan chan ConfigMsg, Wai
 				<-ctx.Done()
 				close()
 			}()
-			defer pctx.CallCancel(ctx)
+			defer func() {
+				_ = pctx.CallCancel(ctx)
+			}()
 
 			for {
 				select {
