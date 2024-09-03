@@ -62,6 +62,8 @@ func main() {
 					log.Default().Printf("ACCEPT %v => %v", (msg.fmsg.Msg).(net.Addr).String(), msg.item.To)
 				case part.DenyMsg:
 					log.Default().Printf("DENY   %v => %v", (msg.fmsg.Msg).(net.Addr).String(), msg.item.To)
+				case part.ClosMsg:
+					log.Default().Printf("CLOSE  %v => %v", (msg.fmsg.Msg).(net.Addr).String(), msg.item.To)
 				case part.ErrorMsg:
 					log.Default().Fatalf("ERROR %v => %v %v", msg.item.Listen, msg.item.To, msg.fmsg.Msg)
 				default:

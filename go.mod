@@ -6,7 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/qydysky/part v0.28.20240903115607
+	github.com/qydysky/part v0.28.20240903172448
 )
 
 require (
@@ -28,4 +28,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace "github.com/qydysky/part" => "../part"
+// replace github.com/qydysky/part => ../part
