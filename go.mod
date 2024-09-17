@@ -6,7 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/qydysky/part v0.28.20240903172448
+	github.com/qydysky/part v0.28.20240917115209
 )
 
 require (
