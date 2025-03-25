@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"log"
@@ -203,9 +204,13 @@ func udpSer(lis, to string) error {
 			var buf [512]byte
 			defer conn.Close()
 			for {
-				_, addr, err := conn.ReadFromUDP(buf[0:])
+				n, addr, err := conn.ReadFromUDP(buf[0:])
 				if err != nil {
 					ec <- err
+					return
+				}
+				if !bytes.Equal([]byte("Hello UDP Server\n"), buf[:n]) {
+					ec <- errors.New("ser rev err data")
 					return
 				}
 				// Write back the message over UPD
