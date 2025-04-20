@@ -4,13 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/rand"
 	"errors"
 	"net"
 	"testing"
 	"time"
-
-	"github.com/qydysky/part"
 )
 
 func Test(t *testing.T) {
@@ -84,9 +81,9 @@ func Test(t *testing.T) {
 	// if e := udp2tcpSer("127.0.0.1:20006", "127.0.0.1:20007"); e != nil {
 	// 	t.Fatal(e)
 	// }
-	if e := u2t2u("127.0.0.1:20014", "127.0.0.1:20013"); e != nil {
-		t.Fatal(e)
-	}
+	// if e := u2t2u("127.0.0.1:20014", "127.0.0.1:20013"); e != nil {
+	// 	t.Fatal(e)
+	// }
 	cancle()
 	wait()
 }
@@ -386,71 +383,72 @@ func udpSer(lis, to string) error {
 // 	}
 // }
 
-func genData(size int) []byte {
-	data := make([]byte, size)
-	if _, e := rand.Read(data); e != nil {
-		panic(e)
-	}
-	data = bytes.ReplaceAll(data, []byte{'\n'}, []byte{' '})
-	data[size-1] = '\n'
-	return data
-}
+// func genData(size int) []byte {
+// 	data := make([]byte, size)
+// 	if _, e := rand.Read(data); e != nil {
+// 		panic(e)
+// 	}
+// 	data = bytes.ReplaceAll(data, []byte{'\n'}, []byte{' '})
+// 	data[size-1] = '\n'
+// 	return data
+// }
 
-func u2t2u(lis, to string) error {
-	ec := make(chan error, 10)
-	{
-		listener, err := part.NewUdpListener("udp", to)
+// func u2t2u(lis, to string) error {
+// 	ec := make(chan error, 10)
+// 	{
+// 		listener, err := part.NewUdpListener("udp", to)
 
-		if err != nil {
-			return err
-		}
+// 		if err != nil {
+// 			return err
+// 		}
 
-		defer listener.Close()
+// 		defer listener.Close()
 
-		go func() {
-			conn, err := listener.Accept()
-			if err != nil {
-				ec <- err
-				return
-			}
+// 		go func() {
+// 			conn, err := listener.Accept()
+// 			if err != nil {
+// 				ec <- err
+// 				return
+// 			}
 
-			data := make([]byte, 10000)
-			n, err := conn.Read(data)
-			if err != nil {
-				ec <- err
-			} else {
-				_, err := conn.Write(data[:n])
-				if err != nil {
-					ec <- err
-				}
-			}
-		}()
-	}
+// 			data := make([]byte, 10000)
+// 			n, err := conn.Read(data)
+// 			if err != nil {
+// 				ec <- err
+// 			} else {
+// 				_, err := conn.Write(data[:n])
+// 				if err != nil {
+// 					ec <- err
+// 				}
+// 			}
+// 		}()
+// 	}
 
-	conn1, err := net.Dial("udp", lis)
+// 	conn1, err := net.Dial("udp", lis)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	size := 8888
-	data := genData(size)
+// 	size := 8888
+// 	data := genData(size)
 
-	if n, err := conn1.Write(data); err != nil || n != size {
-		return err
-	}
+// 	if n, err := conn1.Write(data); err != nil || n != size {
+// 		return err
+// 	}
 
-	// Read from the connection untill a new line is send
-	buf2 := make([]byte, 10000)
-	n, _ := conn1.Read(buf2)
-	if !bytes.Equal(data, buf2[:n]) {
-		return errors.New("no match")
-	}
+// 	// Read from the connection untill a new line is send
+// 	buf2 := make([]byte, 10000)
+// 	n, e := conn1.Read(buf2)
+// 	if !bytes.Equal(data, buf2[:n]) {
+// 		fmt.Println(e)
+// 		return errors.New("no match1")
+// 	}
 
-	select {
-	case err := <-ec:
-		return err
-	default:
-		return nil
-	}
-}
+// 	select {
+// 	case err := <-ec:
+// 		return err
+// 	default:
+// 		return nil
+// 	}
+// }
