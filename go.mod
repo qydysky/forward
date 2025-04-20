@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/qydysky/part v0.28.20250420054637
+	github.com/qydysky/part v0.28.20250420070720
 )
 
 require (
