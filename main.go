@@ -11,10 +11,11 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 
 	"github.com/dustin/go-humanize"
 	"github.com/qydysky/part"
-	pctx "github.com/qydysky/part/ctx"
+	pe "github.com/qydysky/part/errors"
 	file "github.com/qydysky/part/file"
 )
 
@@ -40,84 +41,65 @@ func main() {
 		log.Fatal(e)
 		return
 	} else {
+		ctx, cancle := context.WithCancel(context.Background())
+		wait := dealConfig(ctx, config)
 		// ctrl+c退出
 		var interrupt = make(chan os.Signal, 2)
 		signal.Notify(interrupt, os.Interrupt)
-
-		ctx := pctx.CarryCancel(context.WithCancel(context.Background()))
-		msdChan, wait := dealConfig(ctx, config)
-
-		defer wait()
-		defer func() {
-			_ = pctx.CallCancel(ctx)
-		}()
-
-		for {
-			select {
-			case msg := <-msdChan:
-				switch msg.fmsg.Type {
-				case part.LisnMsg:
-					log.Default().Printf("LISTEN %v => %v", msg.item.Listen, msg.item.To)
-				case part.AcceptMsg:
-					log.Default().Printf("ACCEPT %v => %v", (msg.fmsg.Msg).(net.Addr).String(), msg.item.To)
-				case part.DenyMsg:
-					log.Default().Printf("DENY   %v => %v", (msg.fmsg.Msg).(net.Addr).String(), msg.item.To)
-				case part.ErrorMsg:
-					log.Default().Fatalf("ERROR %v => %v %v", msg.item.Listen, msg.item.To, msg.fmsg.Msg)
-				default:
-				}
-			case <-interrupt:
-				log.Default().Printf("CLOSE")
-				return
-			}
-		}
+		<-interrupt
+		cancle()
+		wait()
 	}
 }
 
-type ConfigMsg struct {
-	item ConfigItem
-	fmsg part.ForwardMsg
+type fm struct {
+	id    atomic.Uint32
+	alive atomic.Int32
 }
 
-func dealConfig(ctx context.Context, config Config) (msgChan chan ConfigMsg, WaitFin func()) {
-	msgChan = make(chan ConfigMsg, 10)
+func (t *fm) ErrorMsg(targetaddr, listenaddr string, e error) {
+	log.Default().Printf("ERROR %v => %v %v", listenaddr, targetaddr, pe.ErrorFormat(e, pe.ErrActionInLineFunc))
+}
+func (t *fm) WarnMsg(targetaddr, listenaddr string, e error) {
+	// log.Default().Printf("Warn  %v => %v %v", listenaddr, targetaddr, pe.ErrorFormat(e, pe.ErrActionInLineFunc))
+}
+func (t *fm) AcceptMsg(remote net.Addr, targetaddr string) (close func()) {
+	current := t.id.Add(1)
+	if current >= 99 {
+		t.id.Store(0)
+	}
+
+	log.Default().Printf("ACCEPT %d %d %v => %v", t.alive.Add(1), current, remote.Network()+"://"+remote.String(), targetaddr)
+	return func() {
+		log.Default().Printf("CONFIN %d %d %v => %v", t.alive.Add(-1), current, remote.Network()+"://"+remote.String(), targetaddr)
+	}
+}
+func (t *fm) DenyMsg(remote net.Addr, targetaddr string) {
+	current := t.id.Add(1)
+	if current >= 99 {
+		t.id.Store(0)
+	}
+	log.Default().Printf("DENY   %d %v => %v", current, remote.Network()+"://"+remote.String(), targetaddr)
+}
+func (t *fm) LisnMsg(targetaddr, listenaddr string) {
+	log.Default().Printf("LISTEN %v => %v", listenaddr, targetaddr)
+}
+func (t *fm) ClosMsg(targetaddr, listenaddr string) {
+	log.Default().Printf("CLOSE %v => %v", listenaddr, targetaddr)
+}
+
+func dealConfig(ctx context.Context, config Config) (WaitFin func()) {
 	var wg sync.WaitGroup
 	wg.Add(len(config))
+	fmp := &fm{}
 	for _, v := range config {
-		go func(ctx context.Context, item ConfigItem) {
+		go func(item ConfigItem) {
 			defer wg.Done()
 
-			var msg_chan chan part.ForwardMsg
-			var close func()
+			defer part.Forward(item.To, item.Listen, item.Accept, fmp)()
 
-			close, msg_chan = part.Forward(item.To, item.Listen, item.Accept)
-
-			go func() {
-				<-ctx.Done()
-				close()
-			}()
-			defer func() {
-				_ = pctx.CallCancel(ctx)
-			}()
-
-			for {
-				select {
-				case msg := <-msg_chan:
-					select {
-					case msgChan <- ConfigMsg{item: item, fmsg: msg}:
-					default:
-						<-msgChan
-						msgChan <- ConfigMsg{item: item, fmsg: msg}
-					}
-					if msg.Type == part.ErrorMsg {
-						return
-					}
-				case <-ctx.Done():
-					return
-				}
-			}
-		}(ctx, v)
+			<-ctx.Done()
+		}(v)
 	}
-
-	return msgChan, wg.Wait
+	return wg.Wait
 }
