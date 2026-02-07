@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.24' ]
+        go: [ '1.25' ]
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
     - name: Set up Go${{ matrix.go }}
       uses: actions/setup-go@v5
@@ -43,13 +45,17 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
         file: coverage
 
+    - name: Create draft release
+      run: |
+        gh release create draft --draft
+
   u-build:
     name: build_ubuntu_go${{ matrix.go }}
     needs: [buildtest]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.24' ]
+        go: [ '1.25' ]
     steps:
     - name: Set up Go${{ matrix.go }}
       uses: actions/setup-go@v5
@@ -72,11 +78,9 @@ jobs:
     - name: zip
       run: zip -q -r ubuntu_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ubuntu_go${{ matrix.go }}.zip
-        path: ./ubuntu_go${{ matrix.go }}.zip
+    - name: Upload a Release Asset
+      run: |
+        gh release upload draft ubuntu_go${{ matrix.go }}.zip
 
   w-build:
     name: build_windows_go${{ matrix.go }}
@@ -84,7 +88,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        go: [ '1.24' ]
+        go: [ '1.25' ]
     steps:
     - name: Set up Go${{ matrix.go }}
       uses: actions/setup-go@v5
@@ -108,11 +112,9 @@ jobs:
     - name: zip
       run: .\7za.exe a -r .\windows_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows_go${{ matrix.go }}.zip
-        path: ./windows_go${{ matrix.go }}.zip
+    - name: Upload a Release Asset
+      run: |
+        gh release upload draft windows_go${{ matrix.go }}.zip
 
   m-build:
     name: build_macos_go${{ matrix.go }}
@@ -120,7 +122,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        go: [ '1.24' ]
+        go: [ '1.25' ]
     steps:
     - name: Set up Go${{ matrix.go }}
       uses: actions/setup-go@v5
@@ -144,8 +146,6 @@ jobs:
     - name: zip
       run: zip -q -r macos_go${{ matrix.go }}.zip ./
 
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: macos_go${{ matrix.go }}.zip
-        path: ./macos_go${{ matrix.go }}.zip
+    - name: Upload a Release Asset
+      run: |
+        gh release upload draft macos_go${{ matrix.go }}.zip
