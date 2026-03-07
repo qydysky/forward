@@ -1,10 +1,10 @@
 module github.com/qydysky/forward
 
-go 1.25
+go 1.26
 
 require (
 	github.com/dustin/go-humanize v1.0.1
-	github.com/qydysky/part v0.28.20260204175650
+	github.com/qydysky/part v0.28.20260226133010
 )
 
 require golang.org/x/text v0.33.0 // indirect

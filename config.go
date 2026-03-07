@@ -7,4 +7,5 @@ type ConfigItem struct {
 	To      string   `json:"to"`
 	IdleDru string   `json:"idleDru"`
 	Accept  []string `json:"accept"`
+	Deny    []string `json:"deny"`
 }

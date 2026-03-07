@@ -1,6 +1,6 @@
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
-github.com/qydysky/part v0.28.20260204175650 h1:xwLfZ1yM1CIEiuxEMKk0lHzGue2sXYSufnkW6rrAp70=
-github.com/qydysky/part v0.28.20260204175650/go.mod h1:FoYV0+1ue2EPBwOch1ucaHJIHCejQEy2wOMgaLT/DfM=
+github.com/qydysky/part v0.28.20260226133010 h1:ppyuJSHh/ELE/Hp/lmCINAfj1CiuM3cGtReVEJ01cm8=
+github.com/qydysky/part v0.28.20260226133010/go.mod h1:yG6c1GmRQ/ksaCbNpPlRqztHrjJBCBBovvrj380eMsk=
 golang.org/x/text v0.33.0 h1:B3njUFyqtHDUI5jMn1YIr5B0IE2U0qck04r6d4KPAxE=
 golang.org/x/text v0.33.0/go.mod h1:LuMebE6+rBincTi9+xWTY8TztLzKHc/9C1uBCG27+q8=

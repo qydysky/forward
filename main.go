@@ -114,7 +114,7 @@ func dealConfig(ctx context.Context, config Config) (WaitFin func()) {
 			if d, e := time.ParseDuration(item.IdleDru); e == nil {
 				fmp.dl = d
 			}
-			defer Forward(item.To, item.Listen, item.Accept, fmp)()
+			defer Forward(item.To, item.Listen, item.Accept, item.Deny, fmp)()
 
 			<-ctx.Done()
 		}(v)
@@ -139,7 +139,7 @@ type ForwardMsgFunc interface {
 	ClosMsg(targetaddr, listenaddr string)
 }
 
-func Forward(targetaddr, listenaddr string, acceptCIDRs []string, callBack ForwardMsgFunc) (closef func()) {
+func Forward(targetaddr, listenaddr string, acceptCIDRs, denyCIDRs []string, callBack ForwardMsgFunc) (closef func()) {
 	closef = func() {}
 
 	lisNet := strings.Split(listenaddr, "://")[0]
@@ -203,6 +203,16 @@ func Forward(targetaddr, listenaddr string, acceptCIDRs []string, callBack Forwa
 		}
 	}
 
+	matchDenyFunc := []func(ip net.IP) bool{}
+	for _, cidr := range denyCIDRs {
+		if _, cidrx, err := net.ParseCIDR(cidr); err != nil {
+			callBack.ErrorMsg(targetaddr, listenaddr, err)
+			return
+		} else {
+			matchDenyFunc = append(matchDenyFunc, cidrx.Contains)
+		}
+	}
+
 	//开始准备转发
 	go func(listener net.Listener) {
 		defer listener.Close()
@@ -229,6 +239,9 @@ func Forward(targetaddr, listenaddr string, acceptCIDRs []string, callBack Forwa
 			var accept bool
 			for i := 0; !accept && i < len(matchfunc); i++ {
 				accept = accept || matchfunc[i](ip)
+			}
+			for i := 0; accept && i < len(matchDenyFunc); i++ {
+				accept = accept && !matchDenyFunc[i](ip)
 			}
 			if !accept {
 				//返回Deny
